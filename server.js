@@ -5,9 +5,10 @@ var _ = require('lodash')
 var server = jsonServer.create()
 var router = jsonServer.router('db.json')
 
-faker.locale = 'zh_CN'
+server.use(jsonServer.defaults)
 
 server.get('/api/questions', function (req, res) {
+  //faker.locale = 'zh_CN'
   var questions = _.times(5, function(n) {
     return {
       id: n,
@@ -18,7 +19,6 @@ server.get('/api/questions', function (req, res) {
   res.send(questions)
 })
 
-server.use(jsonServer.defaults)
 server.use(router)
 
 server.listen(2223)
