@@ -1,0 +1,15 @@
+{
+  "name": "my-json-server",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "zhenkunou",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "license": "ISC",
+  "dependencies": {
+    "faker": "^2.1.3",
+    "json-server": "^0.7.8",
+    "lodash": "^3.9.1"
+  }
+}
