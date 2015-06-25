@@ -4,14 +4,15 @@
 ###安装&启动
 
 ```
+npm install -g nodemon
 npm install
 npm start
 ```
 
 访问：
 
-[http://localhost:2223]()
+[http://localhost:2333]()
 
 或者
 
-[http://localhost:2223/api/questions]()
+[http://localhost:2333/api/test]()
