@@ -1,4 +1,5 @@
 var jsonServer = require('json-server')
+var bodyParser = require('body-parser')
 var faker = require('faker')
 var _ = require('lodash')
 
@@ -6,6 +7,8 @@ var server = jsonServer.create()
 var router = jsonServer.router('db.json')
 
 server.use(jsonServer.defaults)
+server.use(bodyParser.json())
+server.use(bodyParser.urlencoded({ extended: true }))
 
 server.get('/api/test', function (req, res) {
   res.send('hello world!')
@@ -14,41 +17,86 @@ server.get('/api/test', function (req, res) {
 /**
  * 模拟会员体系API
  */
+var mkMoney = function() {
+  return Number(faker.finance.amount())
+}
+var mkTrade = function(name, status, amount, date) {
+  return {
+    name     : name   || '纯色',
+    status   : status || 'order',
+    amount   : amount || mkMoney(),
+    create_at: date   || faker.date.past(),
+  }
+}
 var mkMemberDB = function() {
   return {
-    remain: 180.00,
+    remain: mkMoney(),
     isSetPassword: false,
     recharges: [
-      {_id: '1', price: 5000, bonus: 600 },
-      {_id: '2', price: 3000, bonus: 300 },
-      {_id: '3', price: 1000 },
-      {_id: '4', price: 1000 },
+      {_id: faker.finance.account(), price: 5000, bonus: 600 },
+      {_id: faker.finance.account(), price: 3000, bonus: 300 },
+      {_id: faker.finance.account(), price: 1000, bonus: 0 },
     ],
+    trades: [
+      mkTrade('充值', 'recharge'),
+      mkTrade('充值', 'recharge'),
+      mkTrade('充值', 'recharge'),
+      mkTrade('纯色', 'pay'),
+      mkTrade('纯色', 'refund'),
+      mkTrade('充值', 'recharge'),
+    ]
   }
 }
 var memberdb = mkMemberDB()
-server.get('/member/reset', function(req, res) {
+server.get('/reset', function(req, res) {
   memberdb = mkMemberDB()
 })
-server.get('/member/me', function(req, res) {
+server.get('/userAccounts/me', function(req, res) {
   res.send(
     _.pick(memberdb, 'remain', 'isSetPassword')
   )
 })
-server.get('/member/rechargeInfo', function(req, res) {
+server.get('/userAccounts/rechargeInfo', function(req, res) {
   res.send(
     _.pick(memberdb, 'remain', 'isSetPassword', 'recharges')
   )
 })
-server.post('/member/redeem', function(req, res) {
+server.post('/userAccounts/redeem', function(req, res) {
+  var amount = 100
+  memberdb.trades.push(
+    mkTrade('兑换', 'recharge', amount, new Date())
+  )
+  memberdb.remain += amount
   res.send(
     _.pick(memberdb, 'remain', 'isSetPassword')
   )
 })
-server.post('/member/setPassword', function(req, res) {
+server.post('/userAccounts/pay', function(req, res) {
+  console.log(req.body);
+  var chargeInfo = _.find(memberdb.recharges, {_id: req.body.chargeId})
+  var amount = chargeInfo.price + chargeInfo.bonus
+  memberdb.trades.push(
+    mkTrade('充值', 'recharge', amount, new Date())
+  )
+  memberdb.remain += amount
+  res.send(
+    _.pick(memberdb, 'remain', 'isSetPassword')
+  )
+})
+server.post('/userAccounts/setPassword', function(req, res) {
   memberdb.isSetPassword = true
   res.send(
     _.pick(memberdb, 'isSetPassword')
+  )
+})
+server.get('/userAccounts/trades', function(req, res) {
+  res.send(
+    _.pick(memberdb, 'trades')
+  )
+})
+server.post('/user/verify/sms', function(req, res) {
+  res.send(
+    {code: 1234}
   )
 })
 
