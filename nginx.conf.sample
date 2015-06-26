@@ -1,0 +1,19 @@
+server {
+  listen 80;
+  server_name zhenkunapi.dudumeijia.com;
+
+  access_log  /var/log/nginx/dudu-dev.access.log;
+  error_log  /var/log/nginx/dudu-dev.error.log;
+
+  location ^~ /userAccounts {
+    proxy_pass http://127.0.0.1:2333;
+  }
+
+  location = /user/verify/sms {
+    proxy_pass http://127.0.0.1:2333;
+  }
+
+  location / {
+    proxy_pass http://testapi.dudumeijia.com;
+  }
+}

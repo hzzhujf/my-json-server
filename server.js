@@ -30,6 +30,8 @@ var mkTrade = function(name, status, amount, date) {
 }
 var mkMemberDB = function() {
   return {
+    verifyCode: '1234',
+    password: '123123',
     remain: mkMoney(),
     isSetPassword: false,
     recharges: [
@@ -62,6 +64,9 @@ server.get('/userAccounts/rechargeInfo', function(req, res) {
   )
 })
 server.post('/userAccounts/redeem', function(req, res) {
+  if (req.body.password != '1234') {
+    return res.send(403, {message: 'verify_code_match'})
+  }
   var amount = 100
   memberdb.trades.push(
     mkTrade('兑换', 'recharge', amount, new Date())
@@ -85,8 +90,37 @@ server.post('/userAccounts/pay', function(req, res) {
 })
 server.post('/userAccounts/setPassword', function(req, res) {
   memberdb.isSetPassword = true
+  memberdb.password = req.body.password
   res.send(
     _.pick(memberdb, 'isSetPassword')
+  )
+})
+server.post('/userAccounts/checkPassword', function(req, res) {
+  if (memberdb.password != req.body.password) {
+    return res.send(403, {message: 'password_not_match'})
+  }
+  res.send(
+    {message: 'success'}
+  )
+})
+server.post('/userAccounts/changePassword', function(req, res) {
+  if (memberdb.password != req.body.oldPassword) {
+    return res.send(403, {message: 'password_not_match'})
+  }
+  memberdb.password = req.body.newPassword
+  memberdb.isSetPassword = true
+  res.send(
+    {message: 'success'}
+  )
+})
+server.post('/userAccounts/resetPassword', function(req, res) {
+  if (memberdb.verifyCode != req.body.verifyCode) {
+    return res.send(403, {message: 'verify_code_invalid'})
+  }
+  memberdb.password = req.body.newPassword
+  memberdb.isSetPassword = true
+  res.send(
+    {message: 'success'}
   )
 })
 server.get('/userAccounts/trades', function(req, res) {
@@ -96,7 +130,7 @@ server.get('/userAccounts/trades', function(req, res) {
 })
 server.post('/user/verify/sms', function(req, res) {
   res.send(
-    {code: 1234}
+    {message: 'success'}
   )
 })
 
