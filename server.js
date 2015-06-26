@@ -25,7 +25,7 @@ var mkTrade = function(name, status, amount, date) {
     name     : name   || '纯色',
     status   : status || 'order',
     amount   : amount || mkMoney(),
-    create_at: date   || faker.date.past(),
+    create_at: date   || '2015年4月21日14：44',
   }
 }
 var mkMemberDB = function() {
