@@ -1,3 +1,5 @@
+/*eslint-disable */
+
 var jsonServer = require('json-server')
 var bodyParser = require('body-parser')
 var faker = require('faker')
@@ -53,8 +55,8 @@ var mkMemberDB = function() {
       mkTrade('纯色', '支付成功', -168, '2015年4月3日'),
       mkTrade('纯色', '支付成功', -199, '2015年4月4日'),
       mkTrade('充值', '充值成功', 299,  '2015年4月7日'),
-    ].concat(_.times(100, function(n) {
-      return mkTrade('纯色', '支付成功', -199, '2015年4月4日');
+    ].concat(_.times(500, function(n) {
+      return mkTrade('纯色', '支付成功', -199 + n, '2015年4月4日');
     })),
   }
 }
@@ -214,6 +216,146 @@ server.get('/surveyInfo', function (req, res) {
   })
 })
 
+/**
+ * 嘟一夏活动API
+ * /activities/duyixia
+ */
+
+var mkDuGirlDB = function() {
+  return {}
+}
+var duGirlDB = mkDuGirlDB()
+function getDuGirlData(req) {
+  var code = req.body.code;
+  var phone = code ? parseInt(Math.random() * Math.pow(10, 11)) : null;
+  var id = req.body.phone || phone || 'guest';
+  console.log('test id ' + id);
+  var data = duGirlDB[id];
+  if (!data) {
+    data = duGirlDB[id] = {
+      phone: phone,
+      canShare: true,
+      remainChance: 2,
+    };
+  }
+  return data;
+}
+/**
+ * @apiParam {String} openid
+ * @apiParam {String} code
+ **/
+server.get('/activities/du-girl', function (req, res) {
+  var data = getDuGirlData(req);
+
+  res.send(data)
+});
+
+/**
+ * @apiParam {String} phone
+ **/
+server.post('/activities/du-girl/markAsShared', function (req, res) {
+  var data = getDuGirlData(req);
+  data.remainChance += 1;
+  data.canShare = false;
+
+  res.send(data)
+});
+
+/**
+ * @apiParam {String} phone
+  lotCode: { id: 'dd-100' },                       // 嘟嘟100元
+  lotCode: { id: 'msm-100', code: 'bjsctga' }      // 美上门100元
+  lotCode: { id: 'msm-50', code: 'bjsctgb'}        // 美上门50元
+  lotCode: { id: 'lose' },
+  lotCode: { id: 'master', code: '770036' },       // Master达人
+  lotCode: { id: 'dd-70' },                        // 嘟嘟70元
+  lotCode: { id: 'tpp', code: 'tppddmj' },         // 淘拍拍
+  lotCode: { id: 'meb-200', code: 'MeBDdyzM001' }, // 美呗
+ **/
+server.post('/activities/du-girl/luckyDraw', function (req, res) {
+  var prizes = [
+    { id: 'lose' },
+    { id: 'dd-100' },
+    { id: 'dd-70' },
+    { id: 'meb-200', code: 'MeBDdyzM001' },
+    { id: 'master', code: '770036' },
+    { id: 'tpp', code: 'tppddmj' },
+    { id: 'msm-100', code: 'bjsctga' },
+    { id: 'msm-50', code: 'bjsctgb' },
+  ]
+
+  var data = getDuGirlData(req);
+
+  if (data.remainChance === 0) {
+    data.lotCode = null;
+  }
+  else {
+    var codeIndex = Math.floor(Math.random() * 10) + 0;
+    var prize = prizes[codeIndex > 7 ? 0 : codeIndex]
+    data.remainChance -= 1;
+    data.lotCode = prize;
+  }
+
+  res.send(data)
+});
+
+server.get('/activities/hongbao/getMyHongbao', function (req, res) {
+  res.send({
+    hongBao: {
+      nickname: 'ryan',
+      headimgurl: '', // 用户头像
+      phone: 18888888888,
+      openid: '',
+      amount: 25,
+      comment: '嘟嘟美甲，随时随地美一下。',
+      time: '2015-08-10 22:35:10', // 领取日期
+    },
+    status: 'success', // 'alreadyGetOne', 'noMoreHongBaos'
+    // 已经领取红包的用户信息列表
+    hongBaos: _.times(10, function(n) {
+      return {
+        nickname: 'ryan' + n,
+        headimgurl: '', // 用户头像
+        amount: 25,
+        comment: '嘟嘟美甲，随时随地美一下。',
+        time: '2015-08-10 22:35:10', // 领取日期
+      };
+    }),
+  })
+  // new DDError('noUserForOpenid');
+});
+
+server.post('/activities/hongbao/getHongbaoByPhone', function (req, res) {
+  res.send({
+    hongBao: {
+      nickname: 'ryan',
+      headimgurl: '', // 用户头像
+      phone: 18888888888,
+      openid: '',
+      amount: 25,
+      comment: '嘟嘟美甲，随时随地美一下。',
+      time: '2015-08-10 22:35:10', // 领取日期
+    },
+    status: 'success', // 'alreadyGetOne', 'noMoreHongBaos'
+    // 已经领取红包的用户信息列表
+    hongBaos: _.times(10, function(n) {
+      return {
+        nickname: 'ryan' + n,
+        headimgurl: '', // 用户头像
+        amount: 25,
+        comment: '嘟嘟美甲，随时随地美一下。',
+        time: '2015-08-10 22:35:10', // 领取日期
+      };
+    }),
+  })
+  // new DDError('noUserForOpenid');
+});
+
+server.post('/activities/hongbao/updateCellphone', function (req, res) {
+  res.send({
+    phone: req.body.phone,
+  });
+});
 
 server.use(router)
 
