@@ -4,7 +4,7 @@ const faker = require('faker') // eslint-disable-line no-unused-vars
 const _ = require('lodash') // eslint-disable-line no-unused-vars
 
 const server = jsonServer.create()
-const router = jsonServer.router('db.json')
+const router = jsonServer.router()
 
 server.use(jsonServer.defaults)
 server.use(bodyParser.json())
